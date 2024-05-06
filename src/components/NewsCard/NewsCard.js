@@ -1,5 +1,6 @@
-import React from "react";
+import React, {useState, useEffect, createRef } from "react";
 import useStyles from "./styles.js";
+import classNames from "classnames";
 import {
   Card,
   CardActions,
@@ -10,15 +11,28 @@ import {
   Typography,
 } from "@material-ui/core";
 
-const NewsCard = ({ article: {description, pubishedAt, source, title, url, urlToImage}, i}) => {
+const NewsCard = ({ article: {description, publishedAt, source, title, url, urlToImage}, i, activeArticle }) => {
 
   const classes = useStyles();
+  const [elRefs, setElRefs] = useState([]);
+  const scrollRefs = (ref) => window.scroll(0, ref.current.offsetTop - 50)
+
+  useEffect(() => {
+    setElRefs((refs) => Array(20).fill().map((_, j) => refs[j] || createRef()))
+  }, [])
+
+  useEffect(() =>{
+    if(i === activeArticle && elRefs[activeArticle]){
+      scrollRefs(elRefs[activeArticle])
+    }
+  
+  },[i, activeArticle, elRefs])
   return (
-    <Card className={classes.card}>
+    <Card ref={elRefs[i]} className={classNames(classes.card, activeArticle === i ? classes.activeCard : null)}>
       <CardActionArea href={url} target="_blank">
       <CardMedia className={classes.media} image={urlToImage || 'https://keydifferences.com/wp-content/uploads/2019/11/newspaper-vs-magazine-thumbnail.jpg'}/>
       <div className={classes.details}>
-      <Typography variant="body2" color="textSecondary" component="h2">{(new Date(pubishedAt)).toDateString()}</Typography>
+      <Typography variant="body2" color="textSecondary" component="h2">{(new Date(publishedAt)).toDateString()}</Typography>
       <Typography variant="body2" color="textSecondary" component="h2">{source.name}</Typography>
       </div>
       <Typography className={classes.title} gutterBottom variant="h5">{title}</Typography>
